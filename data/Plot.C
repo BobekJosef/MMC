@@ -6,7 +6,7 @@ void PlotMaxInt() {
   ifstream inFile3;
   inFile3.open("kaons.MaxSum.txt");
   double alpha=1.0;
-
+  mkdir(plots);
 
   int color[3]={622,632,1};
   if (!inFile1||!inFile2||!inFile3) {cerr << "Unable to open file"; exit(EXIT_FAILURE);}
@@ -155,9 +155,6 @@ void PlotMaxInt() {
 }
 
 
-////////////
-
-
 void PlotPt(){
   ifstream inFile1;
   inFile1.open("protons.txt");
@@ -175,7 +172,7 @@ void PlotPt(){
   int tmpi;
   string line;
   double norm;
-  double alpha=0.5;
+  double alpha=1.0;
 
   TCanvas *c = new TCanvas("c","GraphDraw",0,0,800,500);
   TH1::SetDefaultSumw2(kTRUE);
