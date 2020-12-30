@@ -6,7 +6,6 @@ void PlotMaxInt() {
   ifstream inFile3;
   inFile3.open("kaons.MaxSum.txt");
   double alpha=1.0;
-  mkdir(plots);
 
   int color[3]={622,632,1};
   if (!inFile1||!inFile2||!inFile3) {cerr << "Unable to open file"; exit(EXIT_FAILURE);}
