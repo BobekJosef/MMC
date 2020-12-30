@@ -8,30 +8,28 @@ Gen::Gen(int N1, double R1) {
     N=N1;
 }
 
-void Gen::Generate(Dis particle, double max, double integral) {
-    cout<<"Generating "<<particle.Getname()<<endl;
+int Gen::Generate(Dis particle, double max, double integral) {
     string path="C:/Users/Pepa Bobek/Desktop/MMC/data/";
     path.append(particle.Getname());
     path.append(".txt");
     ofstream output(path.c_str());
     Var var(R);
-    int pThisto[100];
+    unsigned long int pThisto[100];
     int acceptance;
+    int NTot=static_cast<int>(N*160/integral);
+    cout<<"Generating "<<particle.Getname()<<" ### Number of events: "<<NTot<<endl;
     double rT, pT, phi, phip, eta, y;
-    int accepted=0, rejected=0;
+    int accepted=0, rejected=0, acceptedTot=0, rejectedTot=0;
     double U, X;
     random_device rd;
     mt19937 mt(rd());
     double sample[6];
     uniform_real_distribution<double> dist(0, 1);
-    for(int Ni=0; Ni<N; Ni++)
-    {
-    cout<<"### Event "<<Ni+1<<" out of "<<N<<" ###";
-    acceptance=Multiplicity(100000);
-    cout<<" multiplicity in the event: "<<acceptance<<" ###"<<endl;
-    for(int & i : pThisto)
+    for(unsigned long int & i : pThisto)
         i=0;
-
+    for(int Ni=0; Ni<NTot; Ni++)
+    {
+    acceptance=Multiplicity(integral, Ni, acceptedTot, rejectedTot);
     while(accepted<acceptance)
     {
         for(double & j : sample)
@@ -49,21 +47,26 @@ void Gen::Generate(Dis particle, double max, double integral) {
         }
         else
             rejected++;
-        if(((accepted+rejected)%1000000)==0)
-            cout<<"Accepted: "<<accepted<<"    \t Rejected: "<<rejected<<endl;
+        if(((acceptedTot+rejectedTot+accepted+rejected)%1000000)==0)
+            cout<<"Accepted: "<<acceptedTot<<"    \t Rejected: "<<rejectedTot<<endl;
     }
-    cout<<"Accepted: "<<accepted<<"    \t Rejected: "<<rejected<<"   (Event done)"<<endl;
-    output<< setw(7);
-    for(int & i : pThisto)
-    output <<i<< setw(7);
-    output<<endl;
+    acceptedTot+=accepted;
+    rejectedTot+=rejected;
+    if(((Ni+1)%10000)==0)
+        cout<<"### "<<Ni+1<<" events done out of "<<NTot<<" ###"<<endl;
     accepted=0;
     rejected=0;
     }
+    cout<<"All "<<NTot<<" events done"<<endl;
+    for(unsigned long int & i : pThisto)
+        output<< setw(9) <<i;
+    output.close();
+    return NTot;
 }
 
-int Gen::Multiplicity(double lambda) {
-    default_random_engine eng{static_cast<long unsigned int>(time(0))};
+int Gen::Multiplicity(double lambda, int a, int b, int c) {
+    seed_seq seed{static_cast<int>(lambda), a, b, c, static_cast<int>(time(nullptr))};
+    default_random_engine eng{seed};
     poisson_distribution<int> dist(lambda);
     int mult=dist(eng);
     return mult;

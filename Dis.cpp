@@ -12,7 +12,7 @@ Dis::Dis(double T1, double _tauf, double R1, double _alpha, double _m, double _g
 
 double Dis::mT(double pT) const {return sqrt((m*m)+(pT*pT));}
 
-double Dis::Max(int K, double &sum) {
+double Dis::Max(int K, double &sum, double &sumErr) {
     cout<<"Estimating maximum for "<<name<<" distribution: ";
     string path="C:/Users/Pepa Bobek/Desktop/MMC/data/";
     path.append(name);
@@ -20,6 +20,7 @@ double Dis::Max(int K, double &sum) {
     ofstream output(path.c_str());
     double max=0;
     sum=0;
+    sumErr=0;
     Var maxvar(R);
     double rT, pT, phi, phip, eta, y;
     random_device rd;
@@ -33,19 +34,21 @@ double Dis::Max(int K, double &sum) {
         maxvar.Sample(sample);
         maxvar.Get(rT, pT, phi, phip, eta, y);
         sum+=Value(rT, pT, phi, phip, eta, y);
+        sumErr+=(Value(rT, pT, phi, phip, eta, y)-(sum/(i+1)))*(Value(rT, pT, phi, phip, eta, y)-(sum/(i+1)));
         if(Value(rT, pT, phi, phip, eta, y)>max)
             max=Value(rT, pT, phi, phip, eta, y);
         if(((i+1)%100)==0)
-            output <<setw(10)<<i+1<< setw(16)<<max<< setw(16)<<sum<<endl;
+            output <<setw(10)<<i+1<< setw(16)<<max<< setw(16)<<sum<< setw(16)<<sumErr<<endl;
     }
     cout<<max<<endl;
     return max;
 }
 
-double Dis::Integrate(int K, double sum) {
-    double Vol=R*3*(2*M_PI)*(2*M_PI)*6*6*5.06765;   //rT*pT*phi*phip*eta*y*1/hbarc
+double Dis::Integrate(int K, double sum, double sumErr) {
+    double Vol=R*3*(2*M_PI)*(2*M_PI)*6*6;   //rT*pT*phi*phip*eta*y
     double result=Vol*sum/K;
-    cout<<"Calculating PDF integral for "<<name<<": "<<result<<endl;
+    double Err=Vol*sqrt(sumErr/K/(K-1));
+    cout<<"Calculating PDF integral for "<<name<<": "<<result<<" +- "<<Err<<endl;
     return result;
 }
 

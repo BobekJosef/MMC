@@ -11,32 +11,34 @@ void DisplayParams(int K, int events, double T, double tauf, double alpha, doubl
     cout<<"# Free model parameter alpha.........."<<alpha<<"      \t#"<<endl;
     cout<<"# Maximal radius R...................."<<R<<" fm   \t#"<<endl;
     cout<<"#-----------------------------------------------#"<<endl;
-    cout<<"# Number of events...................."<<events<<"     \t#"<<endl;
-    cout<<"# Integration & Maximum iterations K.."<<K<<" \t#"<<endl;
+    cout<<"# Number of events proportionality...."<<events<<"  \t#"<<endl;      //1000-50000
+    cout<<"# Integration & Maximum iterations K.."<<K<<" \t#"<<endl;            //100000-1000000
     cout<<"#################################################"<<endl<<endl;
 }
 
 int main() {
     chrono::steady_clock::time_point begin = chrono::steady_clock::now();
-    double const T=0.12, tauf=8.0, alpha=0.1, R=7.0;         //Parameters
-    int const K=1000000, events=1;                       //Parameters
+    double const T=0.12, tauf=8.0, alpha=1, R=7.0;   //Parameters
+    int const K=100000, events=500;   //Parameters
     DisplayParams(K, events, T, tauf, alpha, R);
     Gen gen( events, R);
-    double sum;
+    double sum, sumErr;
+    ofstream NEve("C:/Users/Pepa Bobek/Desktop/MMC/data/NumberOfEvents.txt");
+
     Dis proton(T, tauf, R, alpha, 0.93827, 2.0, "protons");
     Dis pion(T, tauf, R, alpha, 0.13957, 1.0, "pions");
     Dis kaon(T, tauf, R, alpha, 0.49368, 1.0, "kaons");
-    double Mpr=proton.Max(K, sum);
-    double Ipr=proton.Integrate(K,sum);
-    double Mpi=pion.Max(K, sum);
-    double Ipi=pion.Integrate(K,sum);
-    double Mka=kaon.Max(K, sum);
-    double Ika=kaon.Integrate(K,sum);
+    double Mpr=proton.Max(K, sum, sumErr);
+    double Ipr=proton.Integrate(K,sum, sumErr);
+    double Mpi=pion.Max(K, sum, sumErr);
+    double Ipi=pion.Integrate(K,sum, sumErr);
+    double Mka=kaon.Max(K, sum, sumErr);
+    double Ika=kaon.Integrate(K,sum, sumErr);
 
-    gen.Generate(proton, Mpr, Ipr);
-    gen.Generate(pion, Mpi, Ipi);
-    gen.Generate(kaon, Mka, Ika);
-
+    NEve<<proton.Getname()<<": "<<gen.Generate(proton, 1.1*Mpr, Ipr)<<endl;
+    NEve<<pion.Getname()<<": "<<gen.Generate(pion, 1.1*Mpi, Ipi)<<endl;
+    NEve<<kaon.Getname()<<": "<<gen.Generate(kaon, 1.1*Mka, Ika)<<endl;
+    NEve.close();
     chrono::steady_clock::time_point end = chrono::steady_clock::now();
     cout << "Time: " << chrono::duration_cast<chrono::seconds>(end - begin).count() << "s" << endl;
     return 0;
